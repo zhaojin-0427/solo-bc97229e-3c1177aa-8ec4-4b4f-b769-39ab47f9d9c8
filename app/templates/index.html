@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-  <h2>逻辑结构 <span class="pill">schema v{{ snap["schema_version"] }}</span></h2>
+  <h2>逻辑结构 <span class="pill">schema v{{ snap["schema_version"] }}</span>
+    <span class="pill">生效鸟种字典 v{{ snap["active_dict_version"] }}</span></h2>
+  <p><a href="{{ url_for('standard') }}">管理鸟种字典 / 发起替换</a> ｜
+     <a href="{{ url_for('standard_preview') }}">按标准鸟种取数</a></p>
   <table>
     <tr><th>#</th><th>列名</th><th>类型</th></tr>
     <tr><td>0</td><td><code>obs_date</code></td><td>date（观测日，由首列归一化）</td></tr>
@@ -30,12 +33,13 @@
   <h2>批次（每批一个独立 Parquet，既有文件不重写）</h2>
   {% if recent %}
   <table>
-    <tr><th>批次</th><th>站点</th><th>源文件</th><th>行数</th><th>Parquet 文件</th><th>发布时间 (UTC)</th></tr>
+    <tr><th>批次</th><th>站点</th><th>源文件</th><th>行数</th><th>Parquet 文件</th><th>发布时字典</th><th>发布时间 (UTC)</th></tr>
     {% for b in recent %}
     <tr>
       <td><code>{{ b["id"][:8] }}</code></td><td>{{ b["station"] }}</td>
       <td>{{ b["source_filename"] }}</td><td>{{ b["n_rows"] }}</td>
-      <td><code>{{ b["parquet_file"] }}</code></td><td>{{ b["created_at"] }}</td>
+      <td><code>{{ b["parquet_file"] }}</code></td>
+      <td>v{{ b["dict_version"] }}</td><td>{{ b["created_at"] }}</td>
     </tr>
     {% endfor %}
   </table>

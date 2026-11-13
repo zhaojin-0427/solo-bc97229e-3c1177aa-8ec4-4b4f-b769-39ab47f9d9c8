@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}标准化取数 · 鸟类监测数据湖{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>标准化取数（按标准鸟种）
+    <span class="pill">生效字典 v{{ dict_version }}</span>
+    {% if station %}<span class="pill">站点：{{ station }}</span>{% endif %}
+  </h2>
+  <form method="get">
+    站点：
+    <select name="station">
+      <option value="">（全部站点）</option>
+      {% for s in stations %}
+      <option value="{{ s }}" {% if s == station %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    行数上限：<input name="limit" value="{{ limit }}" size="5">
+    <button type="submit">刷新</button>
+    <a href="{{ url_for('standard_download', station=station or '') }}">下载该范围标准化 CSV</a>
+  </form>
+  <p class="muted">
+    共 {{ total }} 行，显示前 {{ rows|length }} 行；标准列均为文本（整数按十进制转文本），
+    空单元格为 NULL。每次取数使用同一状态的字典版本与批次清单。
+  </p>
+  <div style="overflow-x:auto">
+  <table>
+    <tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for r in rows %}
+    <tr>{% for c in columns %}<td>{{ r[c] if r[c] is not none else '' }}</td>{% endfor %}</tr>
+    {% endfor %}
+  </table>
+  </div>
+  {% if not rows %}<p class="muted">暂无数据。</p>{% endif %}
+</div>
+<p><a href="{{ url_for('preview', station=station or '') }}">查看原统一结构（未标准化）</a></p>
+{% endblock %}

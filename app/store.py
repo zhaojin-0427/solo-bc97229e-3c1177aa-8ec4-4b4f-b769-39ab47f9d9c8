@@ -9,7 +9,6 @@ import os
 
 import pyarrow as pa
 import pyarrow.compute as pc
-import pyarrow.csv as pcsv
 import pyarrow.parquet as pq
 
 DATE_COLUMN = "obs_date"  # 首列观测日归一化为固定列名
@@ -89,6 +88,16 @@ def load_unified(parquet_dir, columns, batches):
 
 
 def table_to_csv_bytes(table):
-    sink = pa.BufferOutputStream()
-    pcsv.write_csv(table, sink)
-    return sink.getvalue().to_pybytes()
+    """统一结构 -> CSV 字节。仅在必要时加引号（RFC4180），NULL 输出为空单元格。"""
+    import csv as _csv
+    import io as _io
+
+    buf = _io.StringIO(newline="")
+    writer = _csv.writer(buf)
+    writer.writerow(table.schema.names)
+    cols = {name: table.column(name).to_pylist() for name in table.schema.names}
+    n = table.num_rows
+    for i in range(n):
+        writer.writerow(["" if cols[name][i] is None else cols[name][i]
+                         for name in table.schema.names])
+    return buf.getvalue().encode("utf-8")

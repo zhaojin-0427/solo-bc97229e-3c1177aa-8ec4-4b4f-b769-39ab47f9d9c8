@@ -23,6 +23,13 @@
   input,select,button{font:inherit;padding:.35rem .5rem}
   button{background:#2f6b4f;color:#fff;border:0;border-radius:6px;padding:.45rem 1rem;cursor:pointer}
   .pill{display:inline-block;background:#eef4f0;border:1px solid #cfddd3;border-radius:999px;padding:.05rem .6rem;font-size:.8rem}
+  .status-scanning{background:#fff4e0;border-color:#e8c98a;color:#8a5a12}
+  .status-success{background:#e2f3e7;border-color:#b7dfc4;color:#27653c}
+  .status-failed{background:#fbe4e4;border-color:#eec2c2;color:#8a2b2b}
+  .bar{background:#e9efeb;border-radius:999px;height:14px;overflow:hidden;max-width:520px}
+  .bar > i{display:block;height:100%;background:#2f6b4f;border-radius:999px}
+  textarea{font:inherit;width:100%;box-sizing:border-box;padding:.5rem;border:1px solid #c8d2cb;border-radius:6px}
+  .mapbox{max-height:260px;overflow:auto}
 </style>
 </head>
 <body>
@@ -30,8 +37,10 @@
   <span class="brand">🐦 鸟类监测数据湖</span>
   <a href="{{ url_for('index') }}">总览</a>
   <a href="{{ url_for('upload_form') }}">上传批次</a>
-  <a href="{{ url_for('preview') }}">预览</a>
-  <a href="{{ url_for('download_csv') }}">下载统一CSV</a>
+  <a href="{{ url_for('preview') }}">原始预览</a>
+  <a href="{{ url_for('download_csv') }}">原始CSV</a>
+  <a href="{{ url_for('standard') }}">鸟种字典</a>
+  <a href="{{ url_for('standard_preview') }}">标准化取数</a>
 </header>
 <main>
 {% for m in get_flashed_messages(category_filter=["ok"]) %}<div class="flash ok">{{ m }}</div>{% endfor %}

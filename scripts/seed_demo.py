@@ -16,6 +16,10 @@ SAMPLES = [
     ("青湾监测站", "station_qingwan_2023.csv", ["uint64", "uint64"]),
     ("青湾监测站", "station_qingwan_2024.csv", ["uint64", "uint64"]),
     ("芦苇荡监测站", "station_luweidang_2023.csv", ["text", "uint64"]),  # 触发「白鹭」提升为 text
+    # 别名标准化演示：家雀/麻雀 两列同值，可被「家雀->麻雀」字典无冲突合并
+    ("青湾监测站", "station_qingwan_alias.csv", ["uint64", "uint64"]),
+    # 冲突演示：夜鹭/苍鹭 同批异值，映到同一标准名即冲突
+    ("芦苇荡监测站", "station_luweidang_conflict.csv", ["uint64", "uint64"]),
 ]
 
 
@@ -26,7 +30,8 @@ def main():
     for station, fname, types in SAMPLES:
         path = os.path.join(root, "samples", fname)
         r = service.publish(cfg, station, fname, path, types)
-        print(f"published {fname}: batch={r['batch_id'][:8]} rows={r['n_rows']} changes={r['changes']}")
+        print(f"published {fname}: batch={r['batch_id'][:8]} rows={r['n_rows']} "
+              f"dict=v{r['dict_version']} changes={r['changes']}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}替换任务 #{{ status["id"] }} · 鸟类监测数据湖{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>字典替换任务 #{{ status["id"] }}
+    <span class="pill status-{{ status['status'] }}">
+      {% if status["status"] == "scanning" %}核查中{% elif status["status"] == "success" %}已切换（新字典生效）{% else %}失败（保留旧字典）{% endif %}
+    </span>
+  </h2>
+  <p>
+    旧字典 <b>v{{ status["old_version"] }}</b> → 候选 <b>v{{ status["new_version"] }}</b>
+  </p>
+  <p>
+    已核查批次：<b>{{ status["progress_batches"] }} / {{ status["total_batches"] }}</b> ｜
+    冲突：<b>{{ status["n_conflicts"] }}</b> 处 ｜
+    创建 {{ status["created_at"] }} ｜ 最近心跳 {{ status["heartbeat_at"] }}
+    {% if status["finished_at"] %}｜ 结束 {{ status["finished_at"] }}{% endif %}
+  </p>
+  {% if status["status"] == "scanning" %}
+  {% set pct = (100 * status["progress_batches"] / status["total_batches"]) if status["total_batches"] else 100 %}
+  <div class="bar"><i style="width: {{ '%.1f'|format(pct) }}%"></i></div>
+  <p class="muted">
+    核查为后台只读扫描，不占用目录库写事务；期间上传与取数继续按旧字典。
+    页面每 2 秒自动刷新。
+  </p>
+  {% elif status["status"] == "success" %}
+  <p style="color:#27653c">全部已提交观测无冲突，字典已切换到 v{{ status["new_version"] }}。</p>
+  {% else %}
+  <p style="color:#8a2b2b">{{ status["error"] or "替换失败，生效字典保持不变。" }}</p>
+  {% endif %}
+</div>
+
+{% if status["conflicts"] %}
+<div class="card">
+  <h2>冲突批次明细（数据行号从 1 起，最多列出前 500 条）</h2>
+  <p class="muted">
+    同一批次内映到同一标准名的不同非空值即冲突；需修订字典或源数据后重新发起替换。
+  </p>
+  <table>
+    <tr><th>批次</th><th>站点</th><th>源文件</th><th>数据行号</th><th>标准名</th><th>原名</th><th>原值</th></tr>
+    {% for c in status["conflicts"] %}
+    <tr>
+      <td><code>{{ c["batch_id"][:8] }}</code></td><td>{{ c["station"] }}</td>
+      <td>{{ c["source_filename"] }}</td><td>{{ c["row_number"] }}</td>
+      <td>{{ c["standard_name"] }}</td><td>{{ c["original_name"] }}</td>
+      <td><code>{{ c["original_value"] }}</code></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+<p><a href="{{ url_for('standard') }}">返回鸟种字典</a> ｜
+   <a href="{{ url_for('standard_preview') }}">标准化取数</a></p>
+
+{% if status["status"] == "scanning" %}
+<script>setTimeout(function(){location.reload();}, 2000);</script>
+{% endif %}
+{% endblock %}
